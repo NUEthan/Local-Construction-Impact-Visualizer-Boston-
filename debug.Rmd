@@ -1,0 +1,58 @@
+---
+title: "debug"
+output: pdf_document
+date: ""
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(shiny)
+library(leaflet)
+library(readr)
+library(dplyr)
+library(lubridate)
+
+```
+
+```{r}
+data <- read_csv("data/tmppjsw10o0.csv")
+colnames(data)
+```
+```{r}
+# Clean & filter first 500 valid geolocated permits
+data_clean <- data %>%
+  filter(!is.na(y_latitude), !is.na(x_longitude)) %>%
+  select(
+    permitnumber,
+    worktype,
+    permittypedescr,
+    description,
+    issued_date,
+    y_latitude,
+    x_longitude
+  ) %>%
+  head(500)
+
+# Plot
+leaflet(data_clean) %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addCircleMarkers(
+    lng = ~x_longitude,
+    lat = ~y_latitude,
+    radius = 4,
+    color = "red",
+    stroke = FALSE,
+    fillOpacity = 0.7,
+    popup = ~paste0(
+      "<b>Permit #:</b> ", permitnumber, "<br>",
+      "<b>Type:</b> ", worktype, "<br>",
+      "<b>Description:</b> ", description, "<br>",
+      "<b>Issued:</b> ", issued_date
+    )
+  )
+```
+
+
